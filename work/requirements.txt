@@ -1,0 +1,4 @@
+nba_api
+requests
+plyer
+flask

@@ -1,0 +1,7 @@
+plays.db
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+dist/
+.venv/

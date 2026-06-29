@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-theme="arena">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NBA Live Play-by-Play</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Live NBA</p>
+        <h1>Choose a game, wait for tipoff, and hear every play in real time.</h1>
+        <p class="lede">Pick from today or tomorrow, switch themes, and turn on narration if you want the page to talk you through the action.</p>
+      </div>
+      <div class="controls">
+        <label>Theme
+          <select id="themeSelect">
+            <option value="arena">Arena</option>
+            <option value="broadcast">Broadcast</option>
+            <option value="neon">Neon</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="card-grid" id="gamesGrid">
+      {% for game in games %}
+      <a class="game-card" href="/game/{{ game.gameId }}" data-game-id="{{ game.gameId }}">
+        <div class="card-top-row">
+          <div class="meta">{{ game.awayTeam.teamTricode }} @ {{ game.homeTeam.teamTricode }}</div>
+          <div class="card-badges" id="badges-{{ game.gameId }}"></div>
+        </div>
+        <h2>{{ game.awayTeam.teamCity }} {{ game.awayTeam.teamName }} vs {{ game.homeTeam.teamCity }} {{ game.homeTeam.teamName }}</h2>
+        <p class="game-status" id="status-{{ game.gameId }}">
+          {{ game.gameStatusText }}
+          | Q{{ game.period or 0 }}
+          | {{ game.gameClock or "Scheduled" }}
+        </p>
+        <div class="scoreline" id="score-{{ game.gameId }}">
+          {{ game.awayTeam.score or "-" }} - {{ game.homeTeam.score or "-" }}
+        </div>
+        {% if game.seriesText %}
+        <div class="game-series">{{ game.seriesText }}{% if game.gameLabel %} · {{ game.gameLabel }}{% endif %}</div>
+        {% endif %}
+        <div class="excitement-bar-wrap" id="exc-{{ game.gameId }}" style="display:none">
+          <div class="excitement-label">Excitement</div>
+          <div class="excitement-bar">
+            <div class="excitement-fill" id="excfill-{{ game.gameId }}" style="width:0%"></div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </section>
+
+    {% if not games %}
+    <p class="empty">No games found for today or tomorrow right now.</p>
+    {% endif %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script>
+    async function refreshGames() {
+      try {
+        const res = await fetch("/api/games");
+        const data = await res.json();
+
+        for (const game of data.games || []) {
+          const id = game.gameId;
+          const scoreEl = document.getElementById(`score-${id}`);
+          const statusEl = document.getElementById(`status-${id}`);
+          const badgesEl = document.getElementById(`badges-${id}`);
+          const excWrap = document.getElementById(`exc-${id}`);
+          const excFill = document.getElementById(`excfill-${id}`);
+
+          if (!scoreEl) continue;
+
+          const away = game.awayTeam?.score ?? "-";
+          const home = game.homeTeam?.score ?? "-";
+          scoreEl.textContent = `${away} - ${home}`;
+
+          const clock = game.gameClock || "Scheduled";
+          const period = game.period || 0;
+          statusEl.textContent = `${game.gameStatusText} | Q${period} | ${clock}`;
+
+          // Badges
+          const badges = [];
+          if (game.gameStatus === 2) {
+            badges.push(`<span class="badge badge--live">LIVE</span>`);
+          }
+          if (game.gameStatus === 2) {
+            const margin = Math.abs((game.homeTeam?.score ?? 0) - (game.awayTeam?.score ?? 0));
+            if (period >= 4 && margin <= 5) {
+              badges.push(`<span class="badge badge--close">CLOSE</span>`);
+            }
+          }
+          if (game.period > 4) {
+            badges.push(`<span class="badge badge--ot">OT</span>`);
+          }
+          badgesEl.innerHTML = badges.join("");
+
+          // Excitement bar — only show for live games
+          const exc = game.excitement_score || 0;
+          if (game.gameStatus === 2 && exc > 0) {
+            excWrap.style.display = "";
+            excFill.style.width = `${exc}%`;
+            // Color shifts red as excitement rises
+            const hue = Math.round(200 - exc * 1.4);
+            excFill.style.background = `hsl(${hue}, 80%, 55%)`;
+          } else {
+            excWrap.style.display = "none";
+          }
+        }
+      } catch (e) {
+        console.error("Failed to refresh games:", e);
+      }
+    }
+
+    refreshGames();
+    setInterval(refreshGames, 10000);
+  </script>
+</body>
+</html>

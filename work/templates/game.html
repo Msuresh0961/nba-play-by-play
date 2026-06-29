@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" data-theme="arena">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Feed</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero compact">
+      <div>
+        <p class="eyebrow">Live Feed</p>
+        <h1 id="title">Loading game...</h1>
+        <p class="lede" id="subtitle"></p>
+        <p class="series-info" id="seriesInfo"></p>
+      </div>
+      <div class="controls">
+        <label>Theme
+          <select id="themeSelect">
+            <option value="arena">Arena</option>
+            <option value="broadcast">Broadcast</option>
+            <option value="neon">Neon</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="voiceToggle" checked> Voice narration</label>
+        <button class="link-btn" id="notifButton" type="button">🔔 Enable Alerts</button>
+        <button class="link-btn" id="testVoiceButton" type="button">Test Voice</button>
+        <a class="link-btn" href="{{ url_for('index') }}">Back</a>
+      </div>
+    </header>
+
+    <!-- Scoreboard always full width -->
+    <section class="scoreboard" id="scoreboard"></section>
+
+    <!-- Two-column layout: main content left, sticky feed right -->
+    <div class="game-layout">
+
+      <!-- LEFT: analysis + box score -->
+      <div class="game-main">
+
+        <!-- Analysis panel -->
+        <section class="analysis-panel" id="analysisPanel" style="display:none">
+          <h2 class="analysis-title">Game Analysis</h2>
+          <p class="analysis-summary" id="analysisSummary"></p>
+
+          <div class="analysis-grid">
+            <!-- Away team -->
+            <div class="analysis-team" id="awayAnalysis">
+              <div class="team-prob" id="awayProb"></div>
+              <div class="team-label" id="awayLabel"></div>
+              <table class="stat-table">
+                <thead><tr><th>Stat</th><th>Game</th><th>Last 5 min</th></tr></thead>
+                <tbody id="awayStats"></tbody>
+              </table>
+            </div>
+
+            <!-- Win probability bar + quarter scores -->
+            <div class="prob-bar-wrap">
+              <div class="prob-bar" id="probBar">
+                <div class="prob-fill home" id="probFillHome"></div>
+                <div class="prob-fill away" id="probFillAway"></div>
+              </div>
+              <div class="prob-labels">
+                <span id="probLabelHome"></span>
+                <span id="probLabelAway"></span>
+              </div>
+              <div class="quarter-scores" id="quarterScores"></div>
+            </div>
+
+            <!-- Home team -->
+            <div class="analysis-team" id="homeAnalysis">
+              <div class="team-prob" id="homeProb"></div>
+              <div class="team-label" id="homeLabel"></div>
+              <table class="stat-table">
+                <thead><tr><th>Stat</th><th>Game</th><th>Last 5 min</th></tr></thead>
+                <tbody id="homeStats"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Projected score + best player -->
+          <div class="proj-row">
+            <div class="proj-card" id="projectedScore"></div>
+            <div class="proj-card" id="bestPlayer"></div>
+          </div>
+
+          <!-- Momentum graph -->
+          <div class="momentum-wrap">
+            <div class="analysis-title" style="font-size:.75rem; margin-bottom:8px">Momentum</div>
+            <canvas id="momentumCanvas" width="900" height="120" style="width:100%;height:120px"></canvas>
+          </div>
+        </section>
+
+        <!-- Box score panel -->
+        <section class="analysis-panel" id="boxScorePanel" style="display:none">
+          <h2 class="analysis-title">Box Score</h2>
+          <div id="boxScoreContent"></div>
+        </section>
+
+      </div><!-- end .game-main -->
+
+      <!-- RIGHT: sticky play-by-play sidebar -->
+      <aside class="feed-sidebar">
+        <div class="feed-sidebar-header">
+          <div class="analysis-title" style="margin:0 0 10px">Play by Play</div>
+          <!-- Player filter chips — populated by JS once box score loads -->
+          <div id="playerFilterWrap" style="display:none">
+            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Filter by player</div>
+            <div id="playerChips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          </div>
+        </div>
+        <div class="feed" id="feed"></div>
+      </aside>
+
+    </div><!-- end .game-layout -->
+  </main>
+
+  <script>
+    window.GAME_ID = "{{ game_id }}";
+  </script>
+  <script src="https://js.puter.com/v2/"></script>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
