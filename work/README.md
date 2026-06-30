@@ -56,7 +56,7 @@ A real-time NBA play-by-play alert system with voice narration, game analysis, a
 ### Install
 
 ```bash
-git clone https://github.com/yourusername/nba-live-alerts.git
+git clone https://github.com/Msuresh0961/nba-play-by-play.git
 cd nba-live-alerts
 pip install flask nba_api
 ```
@@ -134,6 +134,3 @@ All plays will load immediately since the game is complete. The analysis, box sc
 
 ---
 
-## License
-
-MIT
